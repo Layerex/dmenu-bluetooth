@@ -12,6 +12,7 @@
 
 1. Install dependencies: dmenu and bluetoothctl (provided by `bluez-utils` in Arch)
 1. `wget "https://raw.githubusercontent.com/Layerex/dmenu-bluetooth/master/dmenu-bluetooth"`
+1. `chmod +x dmenu-bluetooth`
 1. `./dmenu-bluetooth`
 1. (Optional) For easy access, add the script somewhere in your `$PATH`.
 
