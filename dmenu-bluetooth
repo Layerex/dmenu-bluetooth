@@ -18,7 +18,6 @@
 #   Arch repositories: dmenu, bluez-utils (contains bluetoothctl)
 
 # Checks if bluetooth controller is powered on
-
 power_on() {
     if bluetoothctl show | grep -q "Powered: yes"; then
         return 0
@@ -207,7 +206,50 @@ device_menu() {
     trusted=$(device_trusted $mac)
     options="$connected\n$paired\n$trusted"
 
-    # Open dmenu, read chosen option
+    # Open dmenu menu, read chosen option
+    chosen="$(echo -e "$options" | $dmenu_command "$device_name")"
+
+    # Match chosen option to command
+    case $chosen in
+        "")
+            echo "No option chosen."
+            ;;
+        $connected)
+            toggle_connection $mac
+            ;;
+        $paired)
+            toggle_paired $mac
+            ;;
+        $trusted)
+            toggle_trust $mac
+            ;;
+    esac
+}
+
+# Opens a dmenu menu with current bluetooth status and options to connect
+show_menu() {
+    # Get menu options
+    if power_on; then
+        power="Power: on"
+
+        # Human-readable names of devices, one per line
+        # If scan is off, will only list paired devices
+        devices=$(bluetoothctl devices | grep Device | cut -d ' ' -f 3-)
+
+        # Get controller flags
+        scan=$(scan_on)
+        pairable=$(pairable_on)
+        discoverable=$(discoverable_on)
+        divider="---------"
+
+        # Options passed to dmenu 
+        options="$devices\n$divider\n$power\n$scan\n$pairable\n$discoverable"
+    else
+        power="Power: off"
+        options="$power"
+    fi
+
+    # Open dmenu menu, read chosen option
     chosen="$(echo -e "$options" | $dmenu_command "Bluetooth")"
 
     # Match chosen option to command
@@ -235,7 +277,7 @@ device_menu() {
     esac
 }
 
-# Rofi command to pipe into, can add any options here
+# dmenu command to pipe into, can add any options here
 dmenu_command="dmenu -i -p"
 
 case "$1" in
