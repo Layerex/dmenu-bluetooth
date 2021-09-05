@@ -207,7 +207,7 @@ device_menu() {
     options="$connected\n$paired\n$trusted"
 
     # Open dmenu menu, read chosen option
-    chosen="$(echo -e "$options" | $dmenu_command "$device_name")"
+    chosen="$(echo -e "$options" | run_dmenu "$device_name")"
 
     # Match chosen option to command
     case $chosen in
@@ -250,7 +250,7 @@ show_menu() {
     fi
 
     # Open dmenu menu, read chosen option
-    chosen="$(echo -e "$options" | $dmenu_command "Bluetooth")"
+    chosen="$(echo -e "$options" | run_dmenu "Bluetooth")"
 
     # Match chosen option to command
     case $chosen in
@@ -277,8 +277,13 @@ show_menu() {
     esac
 }
 
-# dmenu command to pipe into, can add any options here
-dmenu_command="dmenu -i -p"
+original_args=("$@")
+
+# dmenu command to pipe into. Extra arguments to dmenu-bluetooth are passed through to dmenu. This
+# allows the user to set fonts, sizes, colours, etc.
+run_dmenu() {
+    dmenu "${original_args[@]}" -i -p "$1"
+}
 
 case "$1" in
     --status)
