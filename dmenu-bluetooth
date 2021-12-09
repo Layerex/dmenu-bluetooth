@@ -17,6 +17,10 @@
 # Depends on:
 #   Arch repositories: dmenu, bluez-utils (contains bluetoothctl)
 
+# Constants
+divider="---------"
+goback="Back"
+
 # Checks if bluetooth controller is powered on
 power_on() {
     if bluetoothctl show | grep -q "Powered: yes"; then
@@ -30,8 +34,13 @@ power_on() {
 toggle_power() {
     if power_on; then
         bluetoothctl power off
+        show_menu
     else
+        if rfkill list bluetooth | grep -q 'blocked: yes'; then
+            rfkill unblock bluetooth && sleep 3
+        fi
         bluetoothctl power on
+        show_menu
     fi
 }
 
@@ -51,8 +60,12 @@ toggle_scan() {
     if scan_on; then
         kill $(pgrep -f "bluetoothctl scan on")
         bluetoothctl scan off
+        show_menu
     else
         bluetoothctl scan on &
+        echo "Scanning..."
+        sleep 5
+        show_menu
     fi
 }
 
@@ -71,8 +84,10 @@ pairable_on() {
 toggle_pairable() {
     if pairable_on; then
         bluetoothctl pairable off
+        show_menu
     else
         bluetoothctl pairable on
+        show_menu
     fi
 }
 
@@ -91,8 +106,10 @@ discoverable_on() {
 toggle_discoverable() {
     if discoverable_on; then
         bluetoothctl discoverable off
+        show_menu
     else
         bluetoothctl discoverable on
+        show_menu
     fi
 }
 
@@ -110,8 +127,10 @@ device_connected() {
 toggle_connection() {
     if device_connected $1; then
         bluetoothctl disconnect $1
+        device_menu "$device"
     else
         bluetoothctl connect $1
+        device_menu "$device"
     fi
 }
 
@@ -131,8 +150,10 @@ device_paired() {
 toggle_paired() {
     if device_paired $1; then
         bluetoothctl remove $1
+        device_menu "$device"
     else
         bluetoothctl pair $1
+        device_menu "$device"
     fi
 }
 
@@ -152,8 +173,10 @@ device_trusted() {
 toggle_trust() {
     if device_trusted $1; then
         bluetoothctl untrust $1
+        device_menu "$device"
     else
         bluetoothctl trust $1
+        device_menu "$device"
     fi
 }
 
@@ -161,7 +184,7 @@ toggle_trust() {
 # Useful for status bars like polybar, etc.
 print_status() {
     if power_on; then
-        printf ''
+        printf ''
 
         mapfile -t paired_devices < <(bluetoothctl paired-devices | grep Device | cut -d ' ' -f 2)
         counter=0
@@ -179,12 +202,9 @@ print_status() {
                 ((counter++))
             fi
         done
-
-       if [ $counter -eq 0 ]; then
-           printf " On"
-       fi
+        printf "\n"
     else
-        echo " Off"
+        echo ""
     fi
 }
 
@@ -204,14 +224,14 @@ device_menu() {
     fi
     paired=$(device_paired $mac)
     trusted=$(device_trusted $mac)
-    options="$connected\n$paired\n$trusted"
+    options="$connected\n$paired\n$trusted\n$divider\n$goback\nExit"
 
     # Open dmenu menu, read chosen option
     chosen="$(echo -e "$options" | $dmenu_command "$device_name")"
 
     # Match chosen option to command
     case $chosen in
-        "")
+        "" | $divider)
             echo "No option chosen."
             ;;
         $connected)
@@ -222,6 +242,9 @@ device_menu() {
             ;;
         $trusted)
             toggle_trust $mac
+            ;;
+        $goback)
+            show_menu
             ;;
     esac
 }
@@ -240,13 +263,12 @@ show_menu() {
         scan=$(scan_on)
         pairable=$(pairable_on)
         discoverable=$(discoverable_on)
-        divider="---------"
 
-        # Options passed to dmenu 
-        options="$devices\n$divider\n$power\n$scan\n$pairable\n$discoverable"
+        # Options passed to dmenu
+        options="$devices\n$divider\n$power\n$scan\n$pairable\n$discoverable\nExit"
     else
         power="Power: off"
-        options="$power"
+        options="$power\nExit"
     fi
 
     # Open dmenu menu, read chosen option
