@@ -127,10 +127,10 @@ device_connected() {
 toggle_connection() {
     if device_connected $1; then
         bluetoothctl disconnect $1
-        device_menu "$device"
+        # device_menu "$device"
     else
         bluetoothctl connect $1
-        device_menu "$device"
+        # device_menu "$device"
     fi
 }
 
