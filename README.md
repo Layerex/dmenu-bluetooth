@@ -10,11 +10,12 @@
 
 <!--- Install from [AUR (rofi-bluetooth-git)](https://aur.archlinux.org/packages/rofi-bluetooth-git/), or: -->
 
-1. Install dependencies: dmenu and bluetoothctl (provided by `bluez-utils` in Arch)
-1. `wget "https://raw.githubusercontent.com/Layerex/dmenu-bluetooth/master/dmenu-bluetooth"`
-1. `chmod +x dmenu-bluetooth`
-1. `./dmenu-bluetooth`
-1. (Optional) For easy access, add the script somewhere in your `$PATH`.
+Install dependencies: dmenu and bluetoothctl (provided by `bluez-utils` in Arch)
+
+``` sh
+wget "https://raw.githubusercontent.com/Layerex/dmenu-bluetooth/master/dmenu-bluetooth"
+install dmenu-bluetooth /usr/local/bin
+```
 
 ### Polybar configuration
 
