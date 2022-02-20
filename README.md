@@ -7,8 +7,13 @@
 </div>
 
 ## Installation
+### From AUR
 
-<!--- Install from [AUR (rofi-bluetooth-git)](https://aur.archlinux.org/packages/rofi-bluetooth-git/), or: -->
+``` sh
+yay -S dmenu-bluetooth
+```
+
+### Manually
 
 Install dependencies: dmenu and bluetoothctl (provided by `bluez-utils` in Arch)
 
