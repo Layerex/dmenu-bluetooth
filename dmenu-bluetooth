@@ -325,7 +325,21 @@ run_dmenu() {
     dmenu "${original_args[@]}" -i -p "$1"
 }
 
+print_help() {
+    echo "usage: $0 [--help] [--status] [--connected-icon [ICON]]"
+    echo ""
+    echo "A script that generates a dmenu menu that uses bluetoothctl to connect to bluetooth devices and display status info."
+    echo ""
+    echo "options:"
+    echo "--help                   show this help message and exit"
+    echo "--connected-icon [ICON]  add icon on device list next to connected devices"
+    echo "--status                 print a short string about current bluetooth status and exit"
+}
+
 case "$1" in
+    --help)
+        print_help
+        ;;
     --connected-icon)
         if [[ -z $2 ]]; then
             connected_icon=""

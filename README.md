@@ -22,6 +22,19 @@ wget "https://raw.githubusercontent.com/Layerex/dmenu-bluetooth/master/dmenu-blu
 install dmenu-bluetooth /usr/local/bin
 ```
 
+## Usage
+
+```
+usage: dmenu-bluetooth [--help] [--status] [--connected-icon [ICON]]
+
+A script that generates a dmenu menu that uses bluetoothctl to connect to bluetooth devices and display status info.
+
+options:
+--help                   show this help message and exit
+--connected-icon [ICON]  add icon on device list next to connected devices
+--status                 print a short string about current bluetooth status and exit
+```
+
 ### Polybar configuration
 
 `NOTE:` In order to properly display the bluetooth icon, you will need to use an iconic font in your bar, e.g. [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts)
