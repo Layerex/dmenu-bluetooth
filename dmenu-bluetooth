@@ -20,6 +20,7 @@
 # Constants
 divider="---------"
 goback="Back"
+connected_icon=""
 
 # Checks if bluetooth controller is powered on
 power_on() {
@@ -257,7 +258,21 @@ show_menu() {
 
         # Human-readable names of devices, one per line
         # If scan is off, will only list paired devices
-        devices=$(bluetoothctl devices | grep -F Device | cut -d ' ' -f 3-)
+        if [[ -n $connected_icon ]]; then
+            devices=$(bluetoothctl devices | grep -F Device | while read -r device; do
+                device_name="$(echo "$device" | cut -d ' ' -f 3-)"
+                mac="$(echo "$device" | cut -d ' ' -f 2)"
+                icon=""
+
+                if device_connected "$mac" && [[ -n $connected_icon ]]; then
+                    icon=" $connected_icon"
+                fi
+
+                echo "$device_name${icon}"
+            done)
+        else
+            devices=$(bluetoothctl devices | grep -F Device | cut -d ' ' -f 3-)
+        fi
 
         # Get controller flags
         scan=$(scan_on)
@@ -292,6 +307,9 @@ show_menu() {
             toggle_pairable
             ;;
         *)
+            if [[ -n $connected_icon ]]; then
+                chosen="${chosen%% ${connected_icon}}"
+            fi
             device=$(bluetoothctl devices | grep -F "$chosen")
             # Open a submenu if a device is selected
             if [[ $device ]]; then device_menu "$device"; fi
@@ -308,6 +326,14 @@ run_dmenu() {
 }
 
 case "$1" in
+    --connected-icon)
+        if [[ -z $2 ]]; then
+            connected_icon=""
+        else
+            connected_icon="$2"
+        fi
+        show_menu
+        ;;
     --status)
         print_status
         ;;
