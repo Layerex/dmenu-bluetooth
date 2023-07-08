@@ -24,6 +24,10 @@ goback="Back"
 exit="Exit"
 connected_icon=""
 
+command_present() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 # Checks if bluetooth controller is powered on
 power_on() {
     if bluetoothctl show | grep -F -q "Powered: yes"; then
@@ -360,6 +364,22 @@ print_help() {
     echo "Use the DMENU_BLUETOOTH_LAUNCHER environment variable to use launchers other than dmenu. Rofi, fuzzel, and any dmenu-compatible launchers are supported."
 }
 
+
+# Check if bluetooth daemon is running. Start it if possible.
+if command_present systemctl; then
+    systemctl is-active --quiet bluetooth
+    case $? in
+        3)
+            echo "Bluetooth daemon is not running. It will be started now. Enable it to prevent this prompt."
+            systemctl start bluetooth || exit 3
+            ;;
+        4)
+            echo "Bluetooth daemon is not present. On Arch Linux install bluez and bluez-utils packages."
+            exit 4
+            ;;
+    esac
+fi
+
 dmenu_args=("$@")
 case "$1" in
     --help)
@@ -389,4 +409,5 @@ case "${dmenu_args[0]}" in
         fi
         ;;
 esac
+
 show_menu
