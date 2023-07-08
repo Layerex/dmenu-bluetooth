@@ -281,7 +281,8 @@ show_menu() {
         discoverable=$(discoverable_on)
 
         # Options passed to dmenu
-        options="$devices\n$divider\n$power\n$scan\n$pairable\n$discoverable\nExit"
+        [[ -n $devices ]] && devices_part="$devices\n$divider\n"
+        options="$devices_part$power\n$scan\n$pairable\n$discoverable\nExit"
     else
         power="Power: off"
         options="$power\nExit"
