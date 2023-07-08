@@ -25,14 +25,26 @@ install dmenu-bluetooth /usr/local/bin
 ## Usage
 
 ```
-usage: dmenu-bluetooth [--help] [--status] [--connected-icon [ICON]]
+usage: dmenu-bluetooth [--help] [--status] [--connected-icon [ICON]] [PROMPT] DMENU_ARGS...
 
 A script that generates a dmenu menu that uses bluetoothctl to connect to bluetooth devices and display status info.
 
+positional arguments:
+  PROMPT                    dmenu prompt
+  DMENU_ARGS...             arguments passed to dmenu
+
 options:
---help                   show this help message and exit
---connected-icon [ICON]  add icon on device list next to connected devices
---status                 print a short string about current bluetooth status and exit
+--help                      show this help message and exit
+--status                    print a short string about current bluetooth status and exit
+--connected-icon [ICON]     add icon on device list next to connected devices
+
+environment variables:
+  DMENU_BLUETOOTH_PROMPT    dmenu prompt
+  DMENU_BLUETOOTH_LAUNCHER  command to use instead of 'dmenu'
+
+Positional arguments have to be placed after all other arguments.
+A PROMPT positional argument will be interpreted as part of DMENU_ARGS if it starts with '-'. It won't be parsed if the DMENU_BLUETOOTH_PROMPT environment variable is set.
+Use the DMENU_BLUETOOTH_LAUNCHER environment variable to use launchers other than dmenu. Rofi, fuzzel, and any dmenu-compatible launchers are supported.
 ```
 
 ### Polybar configuration

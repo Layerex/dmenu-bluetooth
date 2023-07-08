@@ -317,41 +317,73 @@ show_menu() {
     esac
 }
 
-original_args=("$@")
-
 # dmenu command to pipe into. Extra arguments to dmenu-bluetooth are passed through to dmenu. This
 # allows the user to set fonts, sizes, colours, etc.
+DMENU_BLUETOOTH_LAUNCHER="${DMENU_BLUETOOTH_LAUNCHER:-dmenu}"
 run_dmenu() {
-    dmenu "${original_args[@]}" -i -p "$1"
+    case "$DMENU_BLUETOOTH_LAUNCHER" in
+        rofi)
+            rofi -dmenu -i -p "$DMENU_BLUETOOTH_PROMPT" "${dmenu_args[@]}"
+            ;;
+        fuzzel)
+            fuzzel --dmenu -i -p "$DMENU_BLUETOOTH_PROMPT" "${dmenu_args[@]}"
+            ;;
+        *)
+            $DMENU_BLUETOOTH_LAUNCHER -i -p "$DMENU_BLUETOOTH_PROMPT" "${dmenu_args[@]}"
+            ;;
+    esac
 }
 
 print_help() {
-    echo "usage: $0 [--help] [--status] [--connected-icon [ICON]]"
+    echo "usage: $0 [--help] [--status] [--connected-icon [ICON]] [PROMPT] DMENU_ARGS..."
     echo ""
     echo "A script that generates a dmenu menu that uses bluetoothctl to connect to bluetooth devices and display status info."
     echo ""
+    echo "positional arguments:"
+    echo "  PROMPT                    dmenu prompt"
+    echo "  DMENU_ARGS...             arguments passed to dmenu"
+    echo ""
     echo "options:"
-    echo "--help                   show this help message and exit"
-    echo "--connected-icon [ICON]  add icon on device list next to connected devices"
-    echo "--status                 print a short string about current bluetooth status and exit"
+    echo "--help                      show this help message and exit"
+    echo "--status                    print a short string about current bluetooth status and exit"
+    echo "--connected-icon [ICON]     add icon on device list next to connected devices"
+    echo ""
+    echo "environment variables:"
+    echo "  DMENU_BLUETOOTH_PROMPT    dmenu prompt"
+    echo "  DMENU_BLUETOOTH_LAUNCHER  command to use instead of 'dmenu'"
+    echo ""
+    echo "Positional arguments have to be placed after all other arguments."
+    echo "A PROMPT positional argument will be interpreted as part of DMENU_ARGS if it starts with '-'. It won't be parsed if the DMENU_BLUETOOTH_PROMPT environment variable is set."
+    echo "Use the DMENU_BLUETOOTH_LAUNCHER environment variable to use launchers other than dmenu. Rofi, fuzzel, and any dmenu-compatible launchers are supported."
 }
 
+dmenu_args=("$@")
 case "$1" in
     --help)
         print_help
+        exit
+        ;;
+    --status)
+        print_status
+        exit
         ;;
     --connected-icon)
-        if [[ -z $2 ]]; then
+        if [[ "$2" == "--" ]]; then
             connected_icon=""
         else
             connected_icon="$2"
         fi
-        show_menu
-        ;;
-    --status)
-        print_status
-        ;;
-    *)
-        show_menu
+        dmenu_args=("${dmenu_args[@]:2}")
         ;;
 esac
+case "${dmenu_args[0]}" in
+    -*)
+        ;;
+    *)
+        if [[ -z "$DMENU_BLUETOOTH_PROMPT" ]]; then
+            DMENU_BLUETOOTH_PROMPT="${dmenu_args[0]}"
+            dmenu_args=("${dmenu_args[@]:1}")
+        fi
+        ;;
+esac
+show_menu
