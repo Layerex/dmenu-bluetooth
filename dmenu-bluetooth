@@ -7,6 +7,7 @@
 #
 # Author: Nick Clyde (clydedroid)
 # dmenu support by: Layerex
+# Original script: https://github.com/nickclyde/rofi-bluetooth
 #
 # A script that generates a dmenu menu that uses bluetoothctl to
 # connect to bluetooth devices and display status info.
