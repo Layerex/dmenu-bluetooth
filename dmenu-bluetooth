@@ -21,6 +21,7 @@
 # Constants
 divider="---------"
 goback="Back"
+exit="Exit"
 connected_icon=""
 
 # Checks if bluetooth controller is powered on
@@ -226,7 +227,7 @@ device_menu() {
     fi
     paired=$(device_paired "$mac")
     trusted=$(device_trusted "$mac")
-    options="$connected\n$paired\n$trusted\n$divider\n$goback\nExit"
+    options="$connected\n$paired\n$trusted\n$divider\n$goback\n$exit"
 
     # Open dmenu menu, read chosen option
     chosen="$(echo -e "$options" | run_dmenu "$device_name")"
@@ -282,10 +283,10 @@ show_menu() {
 
         # Options passed to dmenu
         [[ -n $devices ]] && devices_part="$devices\n$divider\n"
-        options="$devices_part$power\n$scan\n$pairable\n$discoverable\nExit"
+        options="$devices_part$power\n$scan\n$pairable\n$discoverable\n$exit"
     else
         power="Power: off"
-        options="$power\nExit"
+        options="$power\n$exit"
     fi
 
     # Open dmenu menu, read chosen option
