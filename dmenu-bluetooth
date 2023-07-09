@@ -24,15 +24,6 @@ goback="Back"
 exit="Exit"
 connected_icon=""
 
-command_present() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-error() {
-    echo "$1. $2." >&2
-    command_present notify-send && notify-send "$1" "$2."
-}
-
 # Checks if bluetooth controller is powered on
 power_on() {
     if bluetoothctl show | grep -F -q "Powered: yes"; then
@@ -70,7 +61,7 @@ scan_on() {
 # Toggles scanning state
 toggle_scan() {
     if scan_on; then
-        kill $(pgrep -f "bluetoothctl scan on")
+        kill "$(pgrep -f "bluetoothctl scan on")"
         bluetoothctl scan off
         show_menu
     else
@@ -127,8 +118,7 @@ toggle_discoverable() {
 
 # Checks if a device is connected
 device_connected() {
-    device_info=$(bluetoothctl info "$1")
-    if echo "$device_info" | grep -F -q "Connected: yes"; then
+    if bluetoothctl info "$1" | grep -F -q "Connected: yes"; then
         return 0
     else
         return 1
@@ -148,8 +138,7 @@ toggle_connection() {
 
 # Checks if a device is paired
 device_paired() {
-    device_info=$(bluetoothctl info "$1")
-    if echo "$device_info" | grep -F -q "Paired: yes"; then
+    if bluetoothctl info "$1" | grep -F -q "Paired: yes"; then
         echo "Paired: yes"
         return 0
     else
@@ -171,8 +160,7 @@ toggle_paired() {
 
 # Checks if a device is trusted
 device_trusted() {
-    device_info=$(bluetoothctl info "$1")
-    if echo "$device_info" | grep -F -q "Trusted: yes"; then
+    if bluetoothctl info "$1" | grep -F -q "Trusted: yes"; then
         echo "Trusted: yes"
         return 0
     else
@@ -222,7 +210,7 @@ print_status() {
 
 # A submenu for a specific device that allows connecting, pairing, and trusting
 device_menu() {
-    device=$1
+    device="$1"
 
     # Get device name and mac address
     device_name="$(echo "$device" | cut -d ' ' -f 3-)"
@@ -234,8 +222,8 @@ device_menu() {
     else
         connected="Connected: no"
     fi
-    paired=$(device_paired "$mac")
-    trusted=$(device_trusted "$mac")
+    paired="$(device_paired "$mac")"
+    trusted="$(device_trusted "$mac")"
     options="$connected\n$paired\n$trusted\n$divider\n$goback\n$exit"
 
     # Open dmenu menu, read chosen option
@@ -269,8 +257,8 @@ show_menu() {
 
         # Human-readable names of devices, one per line
         # If scan is off, will only list paired devices
-        if [[ -n $connected_icon ]]; then
-            devices=$(bluetoothctl devices | grep -F Device | while read -r device; do
+        if [[ -n "$connected_icon" ]]; then
+            devices="$(bluetoothctl devices | grep -F Device | while read -r device; do
                 device_name="$(echo "$device" | cut -d ' ' -f 3-)"
                 mac="$(echo "$device" | cut -d ' ' -f 2)"
                 icon=""
@@ -280,15 +268,15 @@ show_menu() {
                 fi
 
                 echo "$device_name${icon}"
-            done)
+            done)"
         else
-            devices=$(bluetoothctl devices | grep -F Device | cut -d ' ' -f 3-)
+            devices="$(bluetoothctl devices | grep -F Device | cut -d ' ' -f 3-)"
         fi
 
         # Get controller flags
-        scan=$(scan_on)
-        pairable=$(pairable_on)
-        discoverable=$(discoverable_on)
+        scan="$(scan_on)"
+        pairable="$(pairable_on)"
+        discoverable="$(discoverable_on)"
 
         # Options passed to dmenu
         [[ -n $devices ]] && devices_part="$devices\n$divider\n"
@@ -319,12 +307,12 @@ show_menu() {
             toggle_pairable
             ;;
         *)
-            if [[ -n $connected_icon ]]; then
+            if [[ -n "$connected_icon" ]]; then
                 chosen="${chosen%% ${connected_icon}}"
             fi
-            device=$(bluetoothctl devices | grep -F "$chosen")
+            device="$(bluetoothctl devices | grep -F "$chosen")"
             # Open a submenu if a device is selected
-            if [[ $device ]]; then device_menu "$device"; fi
+            if [[ -n "$device" ]]; then device_menu "$device"; fi
             ;;
     esac
 }
@@ -369,6 +357,14 @@ print_help() {
     echo "Use the DMENU_BLUETOOTH_LAUNCHER environment variable to use launchers other than dmenu. Rofi, fuzzel, and any dmenu-compatible launchers are supported."
 }
 
+command_present() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+error() {
+    echo "$1. $2." >&2
+    command_present notify-send && notify-send "$1" "$2."
+}
 
 # Check if bluetooth daemon is running. Start it if possible.
 if command_present systemctl; then
