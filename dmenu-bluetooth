@@ -28,6 +28,11 @@ command_present() {
     command -v "$1" >/dev/null 2>&1
 }
 
+error() {
+    echo "$1. $2." >&2
+    command_present notify-send && notify-send "$1" "$2."
+}
+
 # Checks if bluetooth controller is powered on
 power_on() {
     if bluetoothctl show | grep -F -q "Powered: yes"; then
@@ -370,11 +375,11 @@ if command_present systemctl; then
     systemctl is-active --quiet bluetooth
     case $? in
         3)
-            echo "Bluetooth daemon is not running. It will be started now. Enable it to prevent this prompt."
+            error "Bluetooth daemon is not running" "Start it to use this script"
             systemctl start bluetooth || exit 3
             ;;
         4)
-            echo "Bluetooth daemon is not present. On Arch Linux install bluez and bluez-utils packages."
+            error "Bluetooth daemon is not present" "On Arch Linux install bluez and bluez-utils packages"
             exit 4
             ;;
     esac
